@@ -17,7 +17,6 @@
                                 {{ method_field('PUT') }}
                             @endisset
                             <div class="row">
-                                @include('admin.fields.text', ['field' => 'slug', 'name' => 'Slug'])
                                 @include('admin.fields.text', ['field' => 'model', 'name' => 'Model'])
                                 @include('admin.fields.select', ['field' => 'marka_id', 'name' => 'Marka', 'options' => $markas])
                                 @include('admin.fields.text', ['field' => 'price_by', 'name' => 'Price by'])
@@ -25,7 +24,10 @@
                                 @include('admin.fields.image', ['field' => 'image', 'name' => 'Image'])
                                 @include('admin.fields.select', ['field' => 'provider_id', 'name' => 'Provider', 'options' => $providers])
                                 @include('admin.fields.select', ['field' => 'sklad_id', 'name' => 'Sklad', 'options' => $sklads])
-                                @include('admin.fields.text', ['field' => 'sizes', 'name' => 'Sizes'])
+                                @include('admin.fields.select', ['field' => 'size_id', 'name' => 'Size', 'options'=>$sizes])
+                                @include('admin.fields.text', ['field' => 'quantity', 'name' => 'Count boxes'])
+                                @include('admin.fields.text', ['field' => 'description', 'name' => 'Description'])
+
                             </div>
                             <input type="submit" value="save">
                         </form>

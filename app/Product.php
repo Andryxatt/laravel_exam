@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $fillable = [
-        'slug',
         'model',
         'marka_id',
         'price_by',
@@ -16,6 +15,9 @@ class Product extends Model
         'provider_id',
         'sklad_id',
         'sizes',
+        'size_id',
+        'quantity',
+        'description'
 
     ];
 
@@ -34,5 +36,9 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo('App\Category');
+    }
+    public function sizes()
+    {
+        return $this->belongsTo('App\Size');
     }
 }

@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Marka;
 use App\Product;
 use App\Provider;
+use App\Size;
 use App\Sklad;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
@@ -36,27 +38,29 @@ class ProductsController extends Controller
         $sklads = Sklad::all();
         $providers = Provider::all();
         $markas = Marka::all();
-        return view('admin.products.form', compact('markas','providers','sklads'));
+        $sizes = Size::all();
+        return view('admin.products.form', compact('markas','providers','sklads','sizes'));
     }
 
+
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request)
     {
 
         $this->validate($request, [
-            'slug'=>'required|min:5|max:20',
             'model'=>'required|min:5|max:20',
             'marka_id' => 'required|integer',
             'price_by' => 'required|integer',
             'price_sale' => 'required|integer',
             'provider_id' => 'required|integer',
             'sklad_id' => 'required|integer',
-            'sizes' => 'required',
+            'size_id' => 'required',
+            'quantity'=>'required',
+            'description'=>'required',
         ]);
         File::makeDirectory('storage/images/' . Auth::id().'/',0777,true,true);
         $item = $request->file('image');
@@ -70,6 +74,61 @@ class ProductsController extends Controller
         return redirect()->route('products.index');
     }
 
+    /**
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function multipleCreate(Request $request)
+    {
+        $files = [];
+        if($request->hasfile('filename'))
+        {
+           // dd($request->file('filename'));
+            foreach($request->file('filename') as $item)
+            {
+
+
+                File::makeDirectory('storage/images/' . Auth::id().'/',0777,true,true);
+                $filename = $item->getFilename() . '.'.$item->getClientOriginalExtension();
+                $location = 'storage/images/' . Auth::id().'/';
+                Image::make($item)->save($location.$filename);
+                $files[]='/images/' . Auth::id().'/'.$filename;
+            }
+        }
+        $sklads = Sklad::all();
+        $providers = Provider::all();
+        $markas = Marka::all();
+        $sizes = Size::all();
+        return view('admin.products.formMultiple', compact('markas','providers','sklads','sizes','files'));
+    }
+
+    public function multipleStore(Request $request)
+    {
+//                $this->validate($request, [
+//                    'model'=>'required|min:5|max:20',
+//                    'marka_id' => 'required|integer',
+//                    'price_by' => 'required|integer',
+//                    'price_sale' => 'required|integer',
+//                    'provider_id' => 'required|integer',
+//                    'sklad_id' => 'required|integer',
+//                    'size_id' => 'required',
+//                    'quantity'=>'required',
+//                    'description'=>'required',
+//                ]);
+                    $products = $request->all();
+//                    print_r($products);
+//                    die;
+//dd($products['products']);
+//                    DB::table('products')->insert($request->all());
+                        Product::insert($products['products']);
+
+
+
+
+
+        return redirect()->route('products.index');
+    }
+
+
 
     public function show(Product $product)
     {
@@ -77,10 +136,8 @@ class ProductsController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Customer  $customer
-     * @return \Illuminate\Http\Response
+     * @param Product $product
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function edit(Product $product)
     {
@@ -88,7 +145,8 @@ class ProductsController extends Controller
         $sklads = Sklad::all();
         $providers = Provider::all();
         $markas = Marka::all();
-        return view('admin.products.form', compact('markas','providers','sklads','entity'));
+        $sizes = Size::all();
+        return view('admin.products.form', compact('markas','providers','sklads','sizes','entity'));
     }
 
     /**
@@ -100,14 +158,15 @@ class ProductsController extends Controller
     public function update(Request $request, Product $product)
     {
         $this->validate($request, [
-            'slug'=>'required|min:5|max:20',
             'model'=>'required|min:5|max:20',
             'marka_id' => 'required|integer',
             'price_by' => 'required|integer',
             'price_sale' => 'required|integer',
             'provider_id' => 'required|integer',
             'sklad_id' => 'required|integer',
-            'sizes' => 'required',
+            'size_id' => 'required',
+            'quantity'=>'required',
+            'description'=>'required'
         ]);
 
         Storage::disk('public')->delete($product->image);
@@ -133,6 +192,8 @@ class ProductsController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      * @throws \Exception
      */
+
+
     public function destroy(Product $product)
     {
         $product->delete();
